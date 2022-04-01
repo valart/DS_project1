@@ -48,6 +48,8 @@ class Node(threading.Thread):
         else:
             if self.request_timestamp < node_time:
                 self.queue.add(node_port)
+            elif self.request_timestamp > node_time:
+                self.send_request(node_port, 'OK')
             else:
                 self.send_request(node_port, 'OK')
 
@@ -72,8 +74,6 @@ class Node(threading.Thread):
         if total == count_ok:
             self.state = State.HELD
 
-
-
     def run(self):
         delay_start_timestamp = None
         delay_started = False
@@ -95,8 +95,7 @@ class Node(threading.Thread):
                     for node_port in self.nodes_to_connect.keys():
                         self.collect_node_port(node_port)
 
-
-            if self.state == State.DO_NOT_WANT:
+            elif self.state == State.DO_NOT_WANT:
                 if not delay_started:
                     delay_start_timestamp = time.time()
                     self.delay = random.randint(5, self.request_delay_time_upper)
@@ -109,7 +108,7 @@ class Node(threading.Thread):
                         delay_started = False
 
             # check if process can access CS
-            if self.state == State.WANTED:
+            else:  # self.state == State.WANTED:
                 self.check_access()
 
     def request_access(self):
@@ -119,11 +118,25 @@ class Node(threading.Thread):
 
 def list_nodes(nodes):
     for node in nodes:
-        print(f"P{node.id}, {node.state.value}, {node.request_timestamp}")
+        print(f"P{node.id}, {node.state.value}, {node.request_timestamp}, {node.delay}")
+
+
+def update_upper_delay(t, nodes):
+    for node in nodes:
+        node.request_delay_time_upper = t
+
+
+def update_upper_cs(t, nodes):
+    for node in nodes:
+        node.critical_section_time_upper = t
 
 
 def execute_command(input_command, nodes):
     cmd = input_command.lower().split()
+    if cmd == "":
+        print("Command not found")
+        return True
+
     command = cmd[0]
 
     if command == 'list':
@@ -132,26 +145,29 @@ def execute_command(input_command, nodes):
         except:
             print("Error")
 
-    if command == 'time-p':
+    elif command == 'time-p':
         try:
-            pass  # update_upper_delay(int(cmd[1]))
+            update_upper_delay(int(cmd[1]), nodes)
         except:
             print("Error")
 
-    if command == 'time-cs':
+    elif command == 'time-cs':
         try:
-            pass  # update_upper_cs(int(cmd[1]))
+            update_upper_cs(int(cmd[1]), nodes)
         except:
             print("Error")
 
-    if command == 'exit':
+    elif command == 'exit':
         return False
+
+    else:
+        print("Command not found")
 
     return True
 
 
 if __name__ == "__main__":
-    N = 3
+    N = 7
     nodes = []
     for i in range(N):
         node = Node(i + 1, 8000 + i, 10, 10)
