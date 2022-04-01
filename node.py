@@ -51,6 +51,7 @@ class Node(threading.Thread):
             elif self.request_timestamp > node_time:
                 self.send_request(node_port, 'OK')
             else:
+                # TODO: handle request with the same timestamp to prevent deadlocks
                 self.send_request(node_port, 'OK')
 
     def request_processing(self, message):
@@ -133,8 +134,8 @@ def update_upper_cs(t, nodes):
 
 def execute_command(input_command, nodes):
     cmd = input_command.lower().split()
-    if cmd == "":
-        print("Command not found")
+    if cmd == None or len(cmd) == 0:
+        print("Command is missing")
         return True
 
     command = cmd[0]
