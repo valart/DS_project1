@@ -1,3 +1,6 @@
+import socket
+import threading
+
 import rpyc
 from rpyc.utils.server import ThreadedServer
 import datetime
@@ -67,7 +70,7 @@ class Process:
 
 def generate_processes(N):
     global processes
-    processes = [Process(id + 1, State.DO_NOT_WANT, 5, 5) for id in range(N)]
+    processes = [Process(id + 1, State.DO_NOT_WANT, 5, 10) for id in range(N)]
 
 
 def start_processes():
@@ -117,10 +120,13 @@ def update_upper_cs(t):
         p.critical_section_time_upper = t
 
 if __name__ == "__main__":
-    N = 6
-    generate_processes(N)
-    start_processes()
-    running = True
-    while running:
-        command = input("Command: ")
-        running = execute_command(command)
+    node = Node(1, 8001)
+    node.start()
+
+    # N = 6
+    # generate_processes(N)
+    # start_processes()
+    # running = True
+    # while running:
+    #     command = input("Command: ")
+    #     running = execute_command(command)
