@@ -3,6 +3,7 @@ import threading
 import socket
 from StateEnum import State
 import time
+import os
 
 
 class Node(threading.Thread):
@@ -48,10 +49,7 @@ class Node(threading.Thread):
         else:
             if self.request_timestamp < node_time:
                 self.queue.add(node_port)
-            elif self.request_timestamp > node_time:
-                self.send_request(node_port, 'OK')
             else:
-                # TODO: handle request with the same timestamp to prevent deadlocks
                 self.send_request(node_port, 'OK')
 
     def request_processing(self, message):
@@ -109,17 +107,17 @@ class Node(threading.Thread):
                         delay_started = False
 
             # check if process can access CS
-            else:  # self.state == State.WANTED:
+            else:
                 self.check_access()
 
     def request_access(self):
         for node_port in self.nodes_to_connect.keys():
-            self.send_request(node_port, time.time())
+            self.send_request(node_port, self.request_timestamp)
 
 
 def list_nodes(nodes):
     for node in nodes:
-        print(f"P{node.id}, {node.state.value}, {node.request_timestamp}, {node.delay}")
+        print(f"P{node.id}, {node.state.value}")
 
 
 def update_upper_delay(t, nodes):
@@ -134,7 +132,7 @@ def update_upper_cs(t, nodes):
 
 def execute_command(input_command, nodes):
     cmd = input_command.lower().split()
-    if cmd == None or len(cmd) == 0:
+    if cmd is None or len(cmd) == 0:
         print("Command is missing")
         return True
 
@@ -168,7 +166,15 @@ def execute_command(input_command, nodes):
 
 
 if __name__ == "__main__":
-    N = 7
+    N = 0
+    while N < 1:
+        try:
+            N = int(input("Insert number of processes: "))
+            if N < 1:
+                print("N must be bigger than 0")
+        except:
+            print("Enter a valid number")
+
     nodes = []
     for i in range(N):
         node = Node(i + 1, 8000 + i, 10, 10)
@@ -185,3 +191,6 @@ if __name__ == "__main__":
     while running:
         command = input("Command: ")
         running = execute_command(command, nodes)
+
+    # kill
+    os._exit(0)
