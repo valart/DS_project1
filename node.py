@@ -91,7 +91,7 @@ class Node(threading.Thread):
                     delay_started = False
                     for node_port in self.queue:
                         self.send_request(node_port, 'OK')
-                        self.queue.remove(node_port)
+                    self.queue = set()
                     for node_port in self.nodes_to_connect.keys():
                         self.collect_node_port(node_port)
 
@@ -103,7 +103,7 @@ class Node(threading.Thread):
                 else:
                     if time.time() - delay_start_timestamp >= self.delay:
                         self.state = State.WANTED
-                        self.request_timestamp = time.time()
+                        self.request_timestamp = time.time() + random.uniform(0.0, 0.0001)
                         self.request_access()
                         delay_started = False
 
