@@ -91,6 +91,7 @@ class Node(threading.Thread):
                     delay_started = False
                     for node_port in self.queue:
                         self.send_request(node_port, 'OK')
+                        self.queue.remove(node_port)
                     for node_port in self.nodes_to_connect.keys():
                         self.collect_node_port(node_port)
 
